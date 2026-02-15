@@ -120,6 +120,14 @@ if st.session_state.attempts >= 3 and not st.session_state.unlocked:
 if st.session_state.unlocked:
     with st.spinner("Verifying response..."):
         time.sleep(1.2)
-    st.markdown('<div class="reward">GREENEARTH20</div>', unsafe_allow_html=True)
 
-st.markdown('</div>', unsafe_allow_html=True)
+    st.success("🎉 Congratulations! You unlocked your reward.")
+
+    st.markdown(
+        "### This is your coupon code for ₹100 flat on all products at **ashvanta.in**"
+    )
+
+    coupon_code = "GREENEARTH20"
+
+    # Copyable coupon box
+    st.code(coupon_code, language=None)

@@ -2,79 +2,80 @@ import streamlit as st
 import random
 import time
 import os
+import base64
 
 st.set_page_config(page_title="Eco Reward", layout="centered")
 
-# ---------- Background Styling ----------
-background_css = ""
+# ---------- Safe Base64 Loader ----------
+def load_base64(path):
+    if os.path.exists(path):
+        with open(path, "rb") as f:
+            return base64.b64encode(f.read()).decode()
+    return None
 
-if os.path.exists("new.jpg"):
-    background_css = """
-    background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.85)),
-                url("new.jpg");
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    """
+# Load images
+bg_base64 = load_base64("new.jpg")
 
-st.markdown(f"""
+# ---------- Inject Background ----------
+if bg_base64:
+    st.markdown(f"""
+    <style>
+    [data-testid="stAppViewContainer"] {{
+        background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.85)),
+                    url("data:image/jpg;base64,{bg_base64}");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+    }}
+    </style>
+    """, unsafe_allow_html=True)
+
+# ---------- Card Styling ----------
+st.markdown("""
 <style>
-[data-testid="stAppViewContainer"] {{
-    {background_css}
-}}
-
-.card {{
+.card {
     background: rgba(255,255,255,0.08);
     backdrop-filter: blur(25px);
     padding: 50px;
     border-radius: 22px;
     box-shadow: 0 12px 40px rgba(0,0,0,0.6);
     animation: fadeIn 1s ease-in-out;
-}}
+}
 
-.title {{
+.title {
     text-align:center;
     font-size:30px;
     font-weight:600;
     color:white;
     margin-bottom:20px;
-}}
+}
 
-.riddle {{
+.riddle {
     color:white;
     font-size:18px;
     margin-bottom:20px;
-}}
+}
 
-.puzzle {{
+.puzzle {
     text-align:center;
     font-size:32px;
     letter-spacing:12px;
     color:white;
     margin-bottom:25px;
-}}
+}
 
-.reward {{
+.reward {
     text-align:center;
     font-size:28px;
     font-weight:600;
     color:#00ff9d;
     margin-top:20px;
-}}
+}
 
-.logo-animate {{
-    animation: fadeInLogo 1.5s ease-in-out;
-}}
-
-@keyframes fadeIn {{
-    from {{opacity:0; transform:translateY(30px);}}
-    to {{opacity:1; transform:translateY(0);}}
-}}
-
-@keyframes fadeInLogo {{
-    from {{opacity:0; transform: translateY(-20px);}}
-    to {{opacity:1; transform: translateY(0);}}
-}}
+@keyframes fadeIn {
+    from {opacity:0; transform:translateY(30px);}
+    to {opacity:1; transform:translateY(0);}
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -114,21 +115,14 @@ for i, letter in enumerate(answer_word):
 # ---------- UI ----------
 st.markdown('<div class="card">', unsafe_allow_html=True)
 
-# ---------- Render ash.svg Properly ----------
+# ---------- SVG Logo ----------
 if os.path.exists("ash.svg"):
     with open("ash.svg", "r", encoding="utf-8") as f:
         svg_content = f.read()
 
-    # Ensure SVG has width
-    if "<svg" in svg_content:
-        svg_content = svg_content.replace(
-            "<svg",
-            '<svg width="160" style="max-width:160px; height:auto;"'
-        )
-
     st.markdown(
         f"""
-        <div class="logo-animate" style="text-align:center; margin-bottom:30px;">
+        <div style="text-align:center; margin-bottom:30px;">
             {svg_content}
         </div>
         """,
@@ -150,7 +144,6 @@ if not st.session_state.unlocked and st.session_state.attempts < 3:
             st.session_state.attempts += 1
             st.warning(f"Incorrect. Attempts remaining: {3 - st.session_state.attempts}")
 
-# ---------- Attempts Exhausted ----------
 if st.session_state.attempts >= 3 and not st.session_state.unlocked:
     st.error("Maximum attempts reached.")
 
@@ -163,7 +156,6 @@ if st.session_state.unlocked:
     st.markdown(
         "### This is your coupon code for ₹100 flat on all products at **ashvanta.in**"
     )
-
     st.code("GREENEARTH20", language=None)
 
 st.markdown('</div>', unsafe_allow_html=True)

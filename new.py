@@ -116,27 +116,23 @@ for i, letter in enumerate(answer_word):
 st.markdown('<div class="card">', unsafe_allow_html=True)
 
 # ---------- SVG Logo ----------
-# ---------- FORCE RENDER ash.svg ----------
 if os.path.exists("ash.svg"):
     with open("ash.svg", "r", encoding="utf-8") as f:
         svg_content = f.read()
 
-    # Force proper sizing
-    if "<svg" in svg_content:
-        svg_content = svg_content.replace(
-            "<svg",
-            '<svg width="180" height="auto" viewBox="0 0 500 500" '
-            'preserveAspectRatio="xMidYMid meet" style="display:block;margin:auto;fill:white;"'
-        )
+    st.markdown(f"""
+    <style>
+    .svg-wrapper svg * {{
+        fill: white !important;
+        stroke: white !important;
+    }}
+    </style>
 
-    st.markdown(
-        f"""
-        <div style="text-align:center; margin-bottom:30px;">
-            {svg_content}
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    <div class="svg-wrapper" style="text-align:center; margin-bottom:30px;">
+        {svg_content}
+    </div>
+    """, unsafe_allow_html=True)
+
 
 
 st.markdown('<div class="title">Unlock Your Eco Reward</div>', unsafe_allow_html=True)

@@ -14,40 +14,32 @@ st.set_page_config(
 st.markdown("""
 <style>
 
-/* Hide header, footer, toolbar */
+/* Hide header, footer, toolbar completely */
 header {visibility: hidden;}
 footer {visibility: hidden;}
 [data-testid="stToolbar"] {display: none;}
 [data-testid="stHeader"] {display: none;}
 
-/* Remove ALL padding/margin */
+/* Remove ALL top spacing */
 .block-container {
-    padding: 0rem !important;
+    padding-top: 0rem !important;
+    padding-bottom: 1rem !important;
+    margin-top: 0rem !important;
 }
 
 .main > div {
-    padding: 0rem !important;
-    margin: 0rem !important;
+    padding-top: 0rem !important;
+    margin-top: 0rem !important;
 }
 
-section.main > div {
-    padding: 0rem !important;
-}
-
+/* Remove empty ghost divs */
 div[data-testid="stVerticalBlock"] > div:empty {
     display: none !important;
 }
 
-/* Fullscreen center layout */
-.center-wrapper {
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-/* Glass Card */
+/* Glass Card aligned to top */
 .card {
+    margin-top: 0px !important;
     width: 600px;
     max-width: 92%;
     background: rgba(255,255,255,0.08);
@@ -153,7 +145,6 @@ for i, letter in enumerate(answer_word):
 
 
 # ---------------- UI ----------------
-st.markdown('<div class="center-wrapper">', unsafe_allow_html=True)
 st.markdown('<div class="card">', unsafe_allow_html=True)
 
 st.markdown('<div class="title">Unlock Your Eco Reward</div>', unsafe_allow_html=True)
@@ -185,6 +176,4 @@ if st.session_state.unlocked:
     st.markdown("### This is your coupon code for ₹100 flat on all products at **ashvanta.in**")
     st.code("GREENEARTH20", language=None)
 
-
-st.markdown('</div>', unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)

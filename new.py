@@ -121,13 +121,13 @@ if st.session_state.unlocked:
     with st.spinner("Verifying response..."):
         time.sleep(1.2)
 
-    st.success("🎉 Congratulations! You unlocked your reward.")
+    st.success(" Congratulations! You unlocked your reward.")
 
     st.markdown(
         "### This is your coupon code for ₹100 flat on all products at **ashvanta.in**"
     )
 
-    coupon_code = "GREENEARTH20"
+    coupon_code = "9RKHJNA54TSC"
 
     # Copyable coupon box
     st.code(coupon_code, language=None)

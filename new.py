@@ -14,32 +14,39 @@ st.set_page_config(
 st.markdown("""
 <style>
 
-/* Hide header, footer, toolbar completely */
-header {visibility: hidden;}
-footer {visibility: hidden;}
-[data-testid="stToolbar"] {display: none;}
-[data-testid="stHeader"] {display: none;}
+/* Remove EVERYTHING above app */
+header {display: none !important;}
+footer {display: none !important;}
+[data-testid="stToolbar"] {display: none !important;}
+[data-testid="stHeader"] {display: none !important;}
 
-/* Remove ALL top spacing */
+/* Remove top app wrapper spacing */
+html, body, [data-testid="stAppViewContainer"] {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Remove main container padding */
 .block-container {
-    padding-top: 0rem !important;
-    padding-bottom: 1rem !important;
-    margin-top: 0rem !important;
+    padding: 0 !important;
+    margin: 0 !important;
 }
 
-.main > div {
-    padding-top: 0rem !important;
-    margin-top: 0rem !important;
+/* Remove internal wrapper spacing */
+[data-testid="stAppViewContainer"] > .main {
+    padding: 0 !important;
+    margin: 0 !important;
 }
 
-/* Remove empty ghost divs */
-div[data-testid="stVerticalBlock"] > div:empty {
-    display: none !important;
+/* Remove first empty vertical block */
+[data-testid="stVerticalBlock"] > div:first-child {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
 }
 
-/* Glass Card aligned to top */
+/* Force card to stick to top */
 .card {
-    margin-top: 0px !important;
+    margin-top: 0 !important;
     width: 600px;
     max-width: 92%;
     background: rgba(255,255,255,0.08);
@@ -49,11 +56,13 @@ div[data-testid="stVerticalBlock"] > div:empty {
     box-shadow: 0 20px 60px rgba(0,0,0,0.7);
 }
 
+/* Title Styling */
 .title {
     text-align:center;
     font-size:28px;
     font-weight:500;
     color:white;
+    margin-top: 0 !important;
     margin-bottom:20px;
 }
 
@@ -72,16 +81,9 @@ div[data-testid="stVerticalBlock"] > div:empty {
     margin-bottom:30px;
 }
 
-.reward {
-    text-align:center;
-    font-size:30px;
-    font-weight:600;
-    color:#00ff9d;
-    margin-top:25px;
-}
-
 </style>
 """, unsafe_allow_html=True)
+
 
 
 # ---------------- BASE64 BACKGROUND ----------------

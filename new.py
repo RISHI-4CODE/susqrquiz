@@ -14,7 +14,7 @@ def get_base64_image(path):
     return None
 
 # Background image (optional)
-bg_image = get_base64_image("background.jpg")  # Use a proper background file here
+bg_image = get_base64_image("new.jpg")  # Use a proper background file here
 
 # ---------- Styling ----------
 background_css = ""
@@ -140,7 +140,7 @@ if st.session_state.unlocked:
     with st.spinner("Verifying response..."):
         time.sleep(1.2)
 
-    st.success("🎉 Congratulations! You unlocked your reward.")
+    st.success(" Congratulations! You unlocked your reward.")
 
     st.markdown(
         "### This is your coupon code for ₹100 flat on all products at **ashvanta.in**"

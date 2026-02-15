@@ -4,7 +4,22 @@ import time
 import os
 import base64
 
-st.set_page_config(page_title="Eco Reward", layout="centered")
+st.set_page_config(
+    page_title="Eco Reward",
+    layout="centered",
+    initial_sidebar_state="collapsed"
+)
+
+# ---------- Hide Streamlit Header / Toolbar ----------
+st.markdown("""
+<style>
+header {visibility: hidden;}
+footer {visibility: hidden;}
+[data-testid="stToolbar"] {display: none;}
+[data-testid="stHeader"] {display: none;}
+[data-testid="stAppViewContainer"] > .main {padding-top: 0rem;}
+</style>
+""", unsafe_allow_html=True)
 
 # ---------- Base64 Loader ----------
 def load_base64(path):
@@ -29,7 +44,7 @@ if bg_base64:
     </style>
     """, unsafe_allow_html=True)
 
-# ---------- Premium Styling ----------
+# ---------- Card Styling ----------
 st.markdown("""
 <style>
 .card {
@@ -38,17 +53,7 @@ st.markdown("""
     padding: 60px;
     border-radius: 24px;
     box-shadow: 0 20px 60px rgba(0,0,0,0.7);
-    animation: fadeIn 1s ease-in-out;
-}
-
-.brand {
-    text-align:center;
-    font-size:34px;
-    font-weight:600;
-    letter-spacing:6px;
-    color:white;
-    margin-bottom:40px;
-    animation: brandFade 1.4s ease-in-out;
+    margin-top: 60px;
 }
 
 .title {
@@ -79,16 +84,6 @@ st.markdown("""
     font-weight:600;
     color:#00ff9d;
     margin-top:25px;
-}
-
-@keyframes fadeIn {
-    from {opacity:0; transform:translateY(30px);}
-    to {opacity:1; transform:translateY(0);}
-}
-
-@keyframes brandFade {
-    from {opacity:0; letter-spacing:12px;}
-    to {opacity:1; letter-spacing:6px;}
 }
 </style>
 """, unsafe_allow_html=True)
@@ -129,14 +124,13 @@ for i, letter in enumerate(answer_word):
 # ---------- UI ----------
 st.markdown('<div class="card">', unsafe_allow_html=True)
 
-st.markdown('<div class="brand">ASHVANTA</div>', unsafe_allow_html=True)
 st.markdown('<div class="title">Unlock Your Eco Reward</div>', unsafe_allow_html=True)
 st.markdown(f'<div class="riddle">{st.session_state.riddle["question"]}</div>', unsafe_allow_html=True)
 st.markdown(f'<div class="puzzle">{display_word}</div>', unsafe_allow_html=True)
 
 # ---------- Input ----------
 if not st.session_state.unlocked and st.session_state.attempts < 3:
-    user_input = st.text_input("Enter your answer:").strip().lower()
+    user_input = st.text_input("Enter your answer:", label_visibility="collapsed").strip().lower()
 
     if st.button("Submit"):
         if user_input == answer_word:

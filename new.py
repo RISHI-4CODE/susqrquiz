@@ -2,7 +2,6 @@ import streamlit as st
 import random
 import time
 import base64
-import streamlit.components.v1 as components
 
 st.set_page_config(page_title="Eco Reward", layout="centered")
 
@@ -40,11 +39,10 @@ st.markdown(f"""
     margin-bottom:20px;
 }}
 
-.reward {{
-    text-align:center;
-    font-size:28px;
-    font-weight:600;
-    color:#00ff9d;
+.riddle {{
+    color:white;
+    font-size:18px;
+    margin-bottom:20px;
 }}
 
 .puzzle {{
@@ -54,32 +52,15 @@ st.markdown(f"""
     color:white;
     margin-bottom:25px;
 }}
+
+.reward {{
+    text-align:center;
+    font-size:28px;
+    font-weight:600;
+    color:#00ff9d;
+}}
 </style>
 """, unsafe_allow_html=True)
-
-# ---------- DEVICE LOCK CHECK ----------
-lock_check = components.html("""
-<script>
-const status = localStorage.getItem("eco_quiz_locked");
-
-if (status === "true") {
-    Streamlit.setComponentValue("LOCKED");
-} else {
-    Streamlit.setComponentValue("OPEN");
-}
-</script>
-""", height=0)
-
-# Wait until component returns something
-if lock_check is None:
-    st.stop()
-
-if lock_check == "LOCKED":
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.markdown('<div class="title">Already Used</div>', unsafe_allow_html=True)
-    st.error("This device has already participated.")
-    st.markdown('</div>', unsafe_allow_html=True)
-    st.stop()
 
 # ---------- Riddles ----------
 riddles = [
@@ -89,6 +70,7 @@ riddles = [
     {"question": "I fall from the sky and can be stored for sustainability. What am I?", "answer": "rainwater"},
 ]
 
+# ---------- Session ----------
 if "riddle" not in st.session_state:
     st.session_state.riddle = random.choice(riddles)
 
@@ -105,7 +87,7 @@ if "unlocked" not in st.session_state:
 answer_word = st.session_state.riddle["answer"]
 revealed_indices = st.session_state.revealed
 
-# ---------- Display Puzzle ----------
+# ---------- Generate Puzzle ----------
 display_word = ""
 for i, letter in enumerate(answer_word):
     if i in revealed_indices:
@@ -116,12 +98,12 @@ for i, letter in enumerate(answer_word):
 # ---------- UI ----------
 st.markdown('<div class="card">', unsafe_allow_html=True)
 st.markdown('<div class="title">Unlock Your Eco Reward</div>', unsafe_allow_html=True)
-st.write(st.session_state.riddle["question"])
+st.markdown(f'<div class="riddle">{st.session_state.riddle["question"]}</div>', unsafe_allow_html=True)
 st.markdown(f'<div class="puzzle">{display_word}</div>', unsafe_allow_html=True)
 
 # ---------- Input ----------
 if not st.session_state.unlocked and st.session_state.attempts < 3:
-    user_input = st.text_input("Enter your answer:", "").strip().lower()
+    user_input = st.text_input("Enter your answer:").strip().lower()
 
     if st.button("Submit"):
         if user_input == answer_word:
@@ -134,17 +116,10 @@ if not st.session_state.unlocked and st.session_state.attempts < 3:
 if st.session_state.attempts >= 3 and not st.session_state.unlocked:
     st.error("Maximum attempts reached.")
 
-# ---------- Reward + Lock ----------
+# ---------- Reward ----------
 if st.session_state.unlocked:
     with st.spinner("Verifying response..."):
         time.sleep(1.2)
-
     st.markdown('<div class="reward">GREENEARTH20</div>', unsafe_allow_html=True)
-
-    components.html("""
-    <script>
-    localStorage.setItem("eco_quiz_locked", "true");
-    </script>
-    """, height=0)
 
 st.markdown('</div>', unsafe_allow_html=True)

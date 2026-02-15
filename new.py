@@ -70,7 +70,7 @@ riddles = [
     {"question": "I fall from the sky and can be stored for sustainability. What am I?", "answer": "rainwater"},
 ]
 
-# ---------- Session ----------
+# ---------- Session State ----------
 if "riddle" not in st.session_state:
     st.session_state.riddle = random.choice(riddles)
 
@@ -87,7 +87,7 @@ if "unlocked" not in st.session_state:
 answer_word = st.session_state.riddle["answer"]
 revealed_indices = st.session_state.revealed
 
-# ---------- Generate Puzzle ----------
+# ---------- Generate Puzzle Display ----------
 display_word = ""
 for i, letter in enumerate(answer_word):
     if i in revealed_indices:

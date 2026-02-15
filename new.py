@@ -2,7 +2,6 @@ import streamlit as st
 import random
 import time
 import base64
-import streamlit.components.v1 as components
 
 st.set_page_config(page_title="Eco Reward", layout="centered")
 
@@ -53,22 +52,24 @@ st.markdown(f"""
     margin-bottom:20px;
 }}
 
+.puzzle {{
+    text-align:center;
+    font-size:32px;
+    letter-spacing:12px;
+    color:white;
+    margin-bottom:25px;
+}}
+
 .reward {{
     text-align:center;
     font-size:28px;
     font-weight:600;
     color:#00ff9d;
-    animation: reveal 1.2s ease forwards;
 }}
 
 @keyframes fadeIn {{
     from {{opacity:0; transform:translateY(40px);}}
     to {{opacity:1; transform:translateY(0);}}
-}}
-
-@keyframes reveal {{
-    from {{opacity:0; letter-spacing:8px;}}
-    to {{opacity:1; letter-spacing:2px;}}
 }}
 </style>
 """, unsafe_allow_html=True)
@@ -98,117 +99,36 @@ if "unlocked" not in st.session_state:
 answer_word = st.session_state.riddle["answer"]
 revealed_indices = st.session_state.revealed
 
+# ---------- Generate Puzzle Display ----------
+display_word = ""
+for i, letter in enumerate(answer_word):
+    if i in revealed_indices:
+        display_word += letter.upper() + " "
+    else:
+        display_word += "_ "
+
 # ---------- Card ----------
 st.markdown('<div class="card">', unsafe_allow_html=True)
 
 st.markdown('<div class="title">Unlock Your Eco Reward</div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle">Solve the riddle using the letter clues below.</div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle">Solve the riddle using the clues below.</div>', unsafe_allow_html=True)
 st.markdown(f'<div class="riddle">{st.session_state.riddle["question"]}</div>', unsafe_allow_html=True)
+st.markdown(f'<div class="puzzle">{display_word}</div>', unsafe_allow_html=True)
 
-# ---------- Puzzle Component ----------
-typed_value = components.html(f"""
-<script src="https://unpkg.com/streamlit-component-lib/dist/index.js"></script>
+# ---------- Input ----------
+if not st.session_state.unlocked and st.session_state.attempts < 3:
+    user_input = st.text_input("Enter your answer:", "").strip().lower()
 
-<style>
-.puzzle-container {{
-    text-align:center;
-    font-size:32px;
-    letter-spacing:14px;
-    color:white;
-    margin-bottom:30px;
-}}
-
-.letter {{
-    border-bottom:2px solid white;
-    display:inline-block;
-    width:32px;
-    text-align:center;
-}}
-
-.revealed {{
-    color:#90caf9;
-    border-bottom:none;
-}}
-
-.hidden-input {{
-    position:absolute;
-    opacity:0;
-}}
-button {{
-    margin-top:20px;
-    padding:10px 25px;
-    background:#111;
-    color:white;
-    border:none;
-    border-radius:6px;
-    cursor:pointer;
-}}
-</style>
-
-<div class="puzzle-container" id="puzzle"></div>
-<input type="text" id="hiddenInput" class="hidden-input" autofocus />
-<button onclick="submitAnswer()">Submit</button>
-
-<script>
-const answer = "{answer_word}";
-const revealed = {revealed_indices};
-let userInput = "";
-
-const puzzle = document.getElementById("puzzle");
-const hiddenInput = document.getElementById("hiddenInput");
-
-function render() {{
-    puzzle.innerHTML = "";
-    let typedIndex = 0;
-
-    for (let i = 0; i < answer.length; i++) {{
-        let span = document.createElement("span");
-        span.classList.add("letter");
-
-        if (revealed.includes(i)) {{
-            span.textContent = answer[i].toUpperCase();
-            span.classList.add("revealed");
-        }} else {{
-            if (typedIndex < userInput.length) {{
-                span.textContent = userInput[typedIndex].toUpperCase();
-                typedIndex++;
-            }} else {{
-                span.textContent = "";
-            }}
-        }}
-        puzzle.appendChild(span);
-    }}
-}}
-
-hiddenInput.addEventListener("input", function(e) {{
-    userInput = e.target.value.replace(/[^a-zA-Z]/g, "");
-    render();
-}});
-
-hiddenInput.addEventListener("keydown", function(e) {{
-    if (e.key === "Enter") {{
-        submitAnswer();
-    }}
-}});
-
-function submitAnswer() {{
-    Streamlit.setComponentValue(userInput);
-}}
-
-render();
-</script>
-""", height=240)
-
-# ---------- Validate Answer ----------
-if typed_value:
-    if st.session_state.attempts >= 3:
-        st.error("Maximum attempts reached.")
-    else:
-        if typed_value.lower().strip() == answer_word:
+    if st.button("Submit"):
+        if user_input == answer_word:
             st.session_state.unlocked = True
         else:
             st.session_state.attempts += 1
             st.warning(f"Incorrect. Attempts remaining: {3 - st.session_state.attempts}")
+
+# ---------- Attempts Exhausted ----------
+if st.session_state.attempts >= 3 and not st.session_state.unlocked:
+    st.error("Maximum attempts reached.")
 
 # ---------- Reward ----------
 if st.session_state.unlocked:

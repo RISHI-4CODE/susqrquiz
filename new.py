@@ -2,30 +2,27 @@ import streamlit as st
 import random
 import time
 import base64
+import streamlit.components.v1 as components
 
 st.set_page_config(page_title="Eco Reward", layout="centered")
 
-# ---------- Load Background ----------
-def get_base64_image(image_path):
-    with open(image_path, "rb") as img:
+# ---------- Image Loader ----------
+def get_base64_image(path):
+    with open(path, "rb") as img:
         return base64.b64encode(img.read()).decode()
 
 bg_image = get_base64_image("new.jpg")
+banner_image = get_base64_image("banner.jpg")
 
-# ---------- Premium Styling ----------
+# ---------- Styling ----------
 st.markdown(f"""
 <style>
-
 [data-testid="stAppViewContainer"] {{
-    background: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.75)),
+    background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.8)),
                 url("data:image/jpg;base64,{bg_image}");
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
-}}
-
-html, body {{
-    font-family: 'Inter', sans-serif;
 }}
 
 .card {{
@@ -33,21 +30,28 @@ html, body {{
     backdrop-filter: blur(25px);
     padding: 50px;
     border-radius: 22px;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.6);
     animation: fadeIn 1.2s ease-in-out;
+}}
+
+.banner {{
+    width:100%;
+    border-radius:15px;
+    margin-bottom:25px;
 }}
 
 .title {{
     text-align:center;
-    font-size:34px;
+    font-size:30px;
     font-weight:600;
     color:white;
+    margin-bottom:10px;
 }}
 
 .subtitle {{
     text-align:center;
-    color:#d0d0d0;
-    margin-bottom:30px;
+    color:#cccccc;
+    margin-bottom:25px;
 }}
 
 .riddle {{
@@ -56,19 +60,12 @@ html, body {{
     margin-bottom:20px;
 }}
 
-.pattern {{
-    text-align:center;
-    font-size:32px;
-    letter-spacing:12px;
-    margin-bottom:30px;
-}}
-
 .reward {{
     text-align:center;
     font-size:28px;
     font-weight:600;
     color:#00ff9d;
-    animation: reveal 1.5s ease forwards;
+    animation: reveal 1.2s ease forwards;
 }}
 
 @keyframes fadeIn {{
@@ -80,7 +77,6 @@ html, body {{
     from {{opacity:0; letter-spacing:8px;}}
     to {{opacity:1; letter-spacing:2px;}}
 }}
-
 </style>
 """, unsafe_allow_html=True)
 
@@ -92,7 +88,7 @@ riddles = [
     {"question": "I fall from the sky and can be stored for sustainability. What am I?", "answer": "rainwater"},
 ]
 
-# ---------- Session Setup ----------
+# ---------- Session ----------
 if "riddle" not in st.session_state:
     st.session_state.riddle = random.choice(riddles)
 
@@ -109,40 +105,104 @@ if "unlocked" not in st.session_state:
 answer_word = st.session_state.riddle["answer"]
 revealed_indices = st.session_state.revealed
 
-# ---------- UI ----------
+# ---------- Card ----------
 st.markdown('<div class="card">', unsafe_allow_html=True)
+
+st.markdown(f'<img src="data:image/jpg;base64,{banner_image}" class="banner">', unsafe_allow_html=True)
 
 st.markdown('<div class="title">Unlock Your Eco Reward</div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle">Solve the riddle using the letter clues below.</div>', unsafe_allow_html=True)
+st.markdown(f'<div class="riddle">{answer_word and st.session_state.riddle["question"]}</div>', unsafe_allow_html=True)
 
-st.markdown(f'<div class="riddle">{st.session_state.riddle["question"]}</div>', unsafe_allow_html=True)
+# ---------- JS Puzzle Component ----------
+components.html(f"""
+<style>
+.puzzle-container {{
+    text-align:center;
+    font-size:32px;
+    letter-spacing:14px;
+    color:white;
+    margin-bottom:30px;
+    user-select:none;
+}}
 
-# Hidden Input
-user_input = st.text_input("Answer", label_visibility="collapsed")
+.letter {{
+    border-bottom:2px solid white;
+    display:inline-block;
+    width:32px;
+    text-align:center;
+}}
 
-# Build Pattern Display
-display = ""
-typed_index = 0
+.revealed {{
+    color:#90caf9;
+    border-bottom:none;
+}}
 
-for i, letter in enumerate(answer_word):
-    if i in revealed_indices:
-        display += f"<span style='color:#90caf9'>{letter.upper()}</span> "
-    else:
-        if typed_index < len(user_input):
-            display += f"<span style='color:white'>{user_input[typed_index].upper()}</span> "
-            typed_index += 1
-        else:
-            display += "<span style='color:white; opacity:0.4;'>_</span> "
+.hidden-input {{
+    position:absolute;
+    opacity:0;
+}}
+</style>
 
-st.markdown(f"<div class='pattern'>{display}</div>", unsafe_allow_html=True)
+<div class="puzzle-container" id="puzzle"></div>
+<input type="text" id="hiddenInput" class="hidden-input" autofocus />
+<button onclick="submitAnswer()" style="margin-top:20px;padding:10px 25px;background:#111;color:white;border:none;border-radius:6px;">Submit</button>
 
-# ---------- Submit Logic ----------
-if st.button("Submit"):
+<script>
+const answer = "{answer_word}";
+const revealed = {revealed_indices};
+let userInput = "";
 
+const puzzle = document.getElementById("puzzle");
+const hiddenInput = document.getElementById("hiddenInput");
+
+function render() {{
+    puzzle.innerHTML = "";
+    let typedIndex = 0;
+
+    for (let i = 0; i < answer.length; i++) {{
+        let span = document.createElement("span");
+        span.classList.add("letter");
+
+        if (revealed.includes(i)) {{
+            span.textContent = answer[i].toUpperCase();
+            span.classList.add("revealed");
+        }} else {{
+            if (typedIndex < userInput.length) {{
+                span.textContent = userInput[typedIndex].toUpperCase();
+                typedIndex++;
+            }} else {{
+                span.textContent = "";
+            }}
+        }}
+        puzzle.appendChild(span);
+    }}
+}}
+
+hiddenInput.addEventListener("input", function(e) {{
+    userInput = e.target.value.replace(/[^a-zA-Z]/g, "");
+    render();
+}});
+
+function submitAnswer() {{
+    window.parent.postMessage({{
+        type: "streamlit:setComponentValue",
+        value: userInput
+    }}, "*");
+}}
+
+render();
+</script>
+""", height=230)
+
+# ---------- Receive Answer ----------
+typed_value = st.session_state.get("component_value")
+
+if typed_value is not None:
     if st.session_state.attempts >= 3:
         st.error("Maximum attempts reached.")
     else:
-        if user_input.lower().strip() == answer_word:
+        if typed_value.lower().strip() == answer_word:
             st.session_state.unlocked = True
         else:
             st.session_state.attempts += 1
@@ -152,7 +212,6 @@ if st.button("Submit"):
 if st.session_state.unlocked:
     with st.spinner("Verifying response..."):
         time.sleep(2)
-
     st.markdown('<div class="reward">GREENEARTH20</div>', unsafe_allow_html=True)
 
 st.markdown('</div>', unsafe_allow_html=True)

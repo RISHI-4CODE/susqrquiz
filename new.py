@@ -4,87 +4,86 @@ import time
 import os
 import base64
 
+# Set page config first
 st.set_page_config(
     page_title="Eco Reward",
     layout="centered",
     initial_sidebar_state="collapsed"
 )
 
-# ---------------- REMOVE ALL STREAMLIT DEFAULT SPACING ----------------
+# ---------------- PATCHED CSS ----------------
 st.markdown("""
 <style>
-
-/* Hide header, footer, toolbar completely */
-header {visibility: hidden;}
-footer {visibility: hidden;}
-[data-testid="stToolbar"] {display: none;}
-[data-testid="stHeader"] {display: none;}
-
-/* Remove ALL top spacing */
-.block-container {
-    padding-top: 0rem !important;
-    padding-bottom: 1rem !important;
-    margin-top: 0rem !important;
-}
-
-.main > div {
-    padding-top: 0rem !important;
-    margin-top: 0rem !important;
-}
-
-/* Remove empty ghost divs */
-div[data-testid="stVerticalBlock"] > div:empty {
+/* 1. Eliminate all Streamlit default headers and footers */
+header, footer, .stDeployButton, [data-testid="stToolbar"], [data-testid="stHeader"] {
     display: none !important;
+    visibility: hidden !important;
 }
 
-/* Glass Card aligned to top */
+/* 2. Reset the main container spacing */
+.main .block-container {
+    padding-top: 2rem !important; /* Small top padding for balance */
+    padding-bottom: 2rem !important;
+    max-width: 600px;
+}
+
+/* 3. Remove the specific ghost block / empty divs at the top */
+[data-testid="stVerticalBlock"] > div:first-child {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+/* 4. The Glass Card Styling */
 .card {
-    margin-top: 0px !important;
-    width: 600px;
-    max-width: 92%;
-    background: rgba(255,255,255,0.08);
-    backdrop-filter: blur(25px);
-    padding: 60px;
+    background: rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 24px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+    padding: 40px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+    margin-top: 0px;
+    text-align: center;
 }
 
+/* 5. Typography and Elements */
 .title {
-    text-align:center;
-    font-size:28px;
-    font-weight:500;
-    color:white;
-    margin-bottom:20px;
+    font-size: 32px;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 15px;
 }
 
 .riddle {
-    color:white;
-    font-size:18px;
-    margin-bottom:25px;
-    text-align:center;
+    font-size: 18px;
+    color: #e0e0e0;
+    margin-bottom: 30px;
+    line-height: 1.5;
 }
 
 .puzzle {
-    text-align:center;
-    font-size:34px;
-    letter-spacing:14px;
-    color:white;
-    margin-bottom:30px;
+    font-size: 38px;
+    font-weight: 800;
+    letter-spacing: 12px;
+    color: #00ff9d;
+    margin-bottom: 40px;
+    text-transform: uppercase;
 }
 
-.reward {
-    text-align:center;
-    font-size:30px;
-    font-weight:600;
-    color:#00ff9d;
-    margin-top:25px;
+/* Fix input field styling to match dark theme */
+div[data-baseweb="input"] {
+    background-color: rgba(255,255,255,0.05) !important;
+    border-radius: 10px !important;
 }
 
+input {
+    color: white !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
 
-# ---------------- BASE64 BACKGROUND ----------------
+# ---------------- BACKGROUND IMAGE HANDLER ----------------
 def load_base64(path):
     if os.path.exists(path):
         with open(path, "rb") as f:
@@ -97,7 +96,7 @@ if bg_base64:
     st.markdown(f"""
     <style>
     [data-testid="stAppViewContainer"] {{
-        background: linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.85)),
+        background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.85)),
                     url("data:image/jpg;base64,{bg_base64}");
         background-size: cover;
         background-position: center;
@@ -107,7 +106,7 @@ if bg_base64:
     """, unsafe_allow_html=True)
 
 
-# ---------------- RIDDLES ----------------
+# ---------------- GAME LOGIC & SESSION STATE ----------------
 riddles = [
     {"question": "I turn waste into something new. I am one of the three R's. What am I?", "answer": "recycle"},
     {"question": "Two wheels, no fuel, I move without smoke. What am I?", "answer": "bicycle"},
@@ -115,8 +114,6 @@ riddles = [
     {"question": "I fall from the sky and can be stored for sustainability. What am I?", "answer": "rainwater"},
 ]
 
-
-# ---------------- SESSION STATE ----------------
 if "riddle" not in st.session_state:
     st.session_state.riddle = random.choice(riddles)
 
@@ -130,50 +127,58 @@ if "attempts" not in st.session_state:
 if "unlocked" not in st.session_state:
     st.session_state.unlocked = False
 
-
 answer_word = st.session_state.riddle["answer"]
 revealed_indices = st.session_state.revealed
 
-
-# ---------------- PUZZLE DISPLAY ----------------
-display_word = ""
-for i, letter in enumerate(answer_word):
-    if i in revealed_indices:
-        display_word += letter.upper() + " "
-    else:
-        display_word += "_ "
+# Prepare the underscores
+display_word = "".join([
+    (letter.upper() if i in revealed_indices else "_") + " " 
+    for i, letter in enumerate(answer_word)
+])
 
 
-# ---------------- UI ----------------
+# ---------------- MAIN UI RENDERING ----------------
+# Wrap everything in the card div
 st.markdown('<div class="card">', unsafe_allow_html=True)
 
-st.markdown('<div class="title">Unlock Your Eco Reward</div>', unsafe_allow_html=True)
+st.markdown(f'<div class="title">Unlock Your Eco Reward</div>', unsafe_allow_html=True)
 st.markdown(f'<div class="riddle">{st.session_state.riddle["question"]}</div>', unsafe_allow_html=True)
 st.markdown(f'<div class="puzzle">{display_word}</div>', unsafe_allow_html=True)
 
-
-# ---------------- INPUT ----------------
+# Input logic
 if not st.session_state.unlocked and st.session_state.attempts < 3:
-    user_input = st.text_input("", placeholder="Enter your answer").strip().lower()
-
-    if st.button("Submit"):
-        if user_input == answer_word:
-            st.session_state.unlocked = True
-        else:
-            st.session_state.attempts += 1
-            st.warning(f"Incorrect. Attempts remaining: {3 - st.session_state.attempts}")
+    # Use label_visibility="collapsed" to prevent extra vertical space
+    user_input = st.text_input("Answer", label_visibility="collapsed", placeholder="Type your answer here...").strip().lower()
+    
+    col1, col2, col3 = st.columns([1, 1, 1])
+    with col2:
+        if st.button("Submit Answer", use_container_width=True):
+            if user_input == answer_word:
+                st.session_state.unlocked = True
+                st.rerun()
+            else:
+                st.session_state.attempts += 1
+                if st.session_state.attempts < 3:
+                    st.toast(f"Incorrect! {3 - st.session_state.attempts} tries left.", icon="⚠️")
 
 if st.session_state.attempts >= 3 and not st.session_state.unlocked:
-    st.error("Maximum attempts reached.")
+    st.error(f"Game Over! The answer was: {answer_word.upper()}")
+    if st.button("Try a New Riddle"):
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
+        st.rerun()
 
-
-# ---------------- REWARD ----------------
+# Reward Display
 if st.session_state.unlocked:
-    with st.spinner("Verifying response..."):
-        time.sleep(1.2)
-
-    st.success("Congratulations! You unlocked your reward.")
-    st.markdown("### This is your coupon code for ₹100 flat on all products at **ashvanta.in**")
+    st.balloons()
+    st.success("Correct! You've earned a reward.")
+    st.markdown("### Your Coupon Code:")
     st.code("GREENEARTH20", language=None)
+    st.markdown("Flat ₹100 OFF at **ashvanta.in**")
+    
+    if st.button("Play Again"):
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
+        st.rerun()
 
 st.markdown('</div>', unsafe_allow_html=True)

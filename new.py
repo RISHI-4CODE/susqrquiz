@@ -12,7 +12,6 @@ def get_base64_image(path):
         return base64.b64encode(img.read()).decode()
 
 bg_image = get_base64_image("new.jpg")
-banner_image = get_base64_image("banner.jpg")
 
 # ---------- Styling ----------
 st.markdown(f"""
@@ -32,12 +31,6 @@ st.markdown(f"""
     border-radius: 22px;
     box-shadow: 0 12px 40px rgba(0,0,0,0.6);
     animation: fadeIn 1.2s ease-in-out;
-}}
-
-.banner {{
-    width:100%;
-    border-radius:15px;
-    margin-bottom:25px;
 }}
 
 .title {{
@@ -108,11 +101,9 @@ revealed_indices = st.session_state.revealed
 # ---------- Card ----------
 st.markdown('<div class="card">', unsafe_allow_html=True)
 
-st.markdown(f'<img src="data:image/jpg;base64,{banner_image}" class="banner">', unsafe_allow_html=True)
-
 st.markdown('<div class="title">Unlock Your Eco Reward</div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle">Solve the riddle using the letter clues below.</div>', unsafe_allow_html=True)
-st.markdown(f'<div class="riddle">{answer_word and st.session_state.riddle["question"]}</div>', unsafe_allow_html=True)
+st.markdown(f'<div class="riddle">{st.session_state.riddle["question"]}</div>', unsafe_allow_html=True)
 
 # ---------- JS Puzzle Component ----------
 components.html(f"""

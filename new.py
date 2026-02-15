@@ -6,9 +6,10 @@ import base64
 
 st.set_page_config(
     page_title="Eco Reward",
-    layout="centered",
+    layout="wide",
     initial_sidebar_state="collapsed"
 )
+
 
 # ---------------- REMOVE ALL STREAMLIT DEFAULT SPACING ----------------
 st.markdown("""

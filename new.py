@@ -17,7 +17,7 @@ bg_image = get_base64_image("new.jpg")
 st.markdown(f"""
 <style>
 [data-testid="stAppViewContainer"] {{
-    background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.8)),
+    background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.85)),
                 url("data:image/jpg;base64,{bg_image}");
     background-size: cover;
     background-position: center;
@@ -105,8 +105,10 @@ st.markdown('<div class="title">Unlock Your Eco Reward</div>', unsafe_allow_html
 st.markdown('<div class="subtitle">Solve the riddle using the letter clues below.</div>', unsafe_allow_html=True)
 st.markdown(f'<div class="riddle">{st.session_state.riddle["question"]}</div>', unsafe_allow_html=True)
 
-# ---------- JS Puzzle Component ----------
-components.html(f"""
+# ---------- Puzzle Component ----------
+typed_value = components.html(f"""
+<script src="https://unpkg.com/streamlit-component-lib/dist/index.js"></script>
+
 <style>
 .puzzle-container {{
     text-align:center;
@@ -114,7 +116,6 @@ components.html(f"""
     letter-spacing:14px;
     color:white;
     margin-bottom:30px;
-    user-select:none;
 }}
 
 .letter {{
@@ -133,11 +134,20 @@ components.html(f"""
     position:absolute;
     opacity:0;
 }}
+button {{
+    margin-top:20px;
+    padding:10px 25px;
+    background:#111;
+    color:white;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+}}
 </style>
 
 <div class="puzzle-container" id="puzzle"></div>
 <input type="text" id="hiddenInput" class="hidden-input" autofocus />
-<button onclick="submitAnswer()" style="margin-top:20px;padding:10px 25px;background:#111;color:white;border:none;border-radius:6px;">Submit</button>
+<button onclick="submitAnswer()">Submit</button>
 
 <script>
 const answer = "{answer_word}";
@@ -175,21 +185,22 @@ hiddenInput.addEventListener("input", function(e) {{
     render();
 }});
 
+hiddenInput.addEventListener("keydown", function(e) {{
+    if (e.key === "Enter") {{
+        submitAnswer();
+    }}
+}});
+
 function submitAnswer() {{
-    window.parent.postMessage({{
-        type: "streamlit:setComponentValue",
-        value: userInput
-    }}, "*");
+    Streamlit.setComponentValue(userInput);
 }}
 
 render();
 </script>
-""", height=230)
+""", height=240)
 
-# ---------- Receive Answer ----------
-typed_value = st.session_state.get("component_value")
-
-if typed_value is not None:
+# ---------- Validate Answer ----------
+if typed_value:
     if st.session_state.attempts >= 3:
         st.error("Maximum attempts reached.")
     else:
@@ -202,7 +213,7 @@ if typed_value is not None:
 # ---------- Reward ----------
 if st.session_state.unlocked:
     with st.spinner("Verifying response..."):
-        time.sleep(2)
+        time.sleep(1.5)
     st.markdown('<div class="reward">GREENEARTH20</div>', unsafe_allow_html=True)
 
 st.markdown('</div>', unsafe_allow_html=True)

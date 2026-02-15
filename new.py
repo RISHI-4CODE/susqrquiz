@@ -1,31 +1,17 @@
 import streamlit as st
 import random
 import time
-import base64
 import os
 
 st.set_page_config(page_title="Eco Reward", layout="centered")
 
-# ---------- Safe Image Loader ----------
-def get_base64_image(path):
-    if os.path.exists(path):
-        with open(path, "rb") as img:
-            return base64.b64encode(img.read()).decode()
-    return None
-
-# Background image
-bg_image = get_base64_image("new.jpg")
-
-# SVG banner
-svg_banner = get_base64_image("ash.svg")
-
-# ---------- Styling ----------
+# ---------- Background Styling ----------
 background_css = ""
 
-if bg_image:
-    background_css = f"""
+if os.path.exists("new.jpg"):
+    background_css = """
     background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.85)),
-                url("data:image/jpg;base64,{bg_image}");
+                url("new.jpg");
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -43,14 +29,7 @@ st.markdown(f"""
     padding: 50px;
     border-radius: 22px;
     box-shadow: 0 12px 40px rgba(0,0,0,0.6);
-}}
-
-.banner {{
-    display:block;
-    margin-left:auto;
-    margin-right:auto;
-    margin-bottom:30px;
-    width:160px;
+    animation: fadeIn 1s ease-in-out;
 }}
 
 .title {{
@@ -82,6 +61,20 @@ st.markdown(f"""
     color:#00ff9d;
     margin-top:20px;
 }}
+
+.logo-animate {{
+    animation: fadeInLogo 1.5s ease-in-out;
+}}
+
+@keyframes fadeIn {{
+    from {{opacity:0; transform:translateY(30px);}}
+    to {{opacity:1; transform:translateY(0);}}
+}}
+
+@keyframes fadeInLogo {{
+    from {{opacity:0; transform: translateY(-20px);}}
+    to {{opacity:1; transform: translateY(0);}}
+}}
 </style>
 """, unsafe_allow_html=True)
 
@@ -110,7 +103,7 @@ if "unlocked" not in st.session_state:
 answer_word = st.session_state.riddle["answer"]
 revealed_indices = st.session_state.revealed
 
-# ---------- Generate Puzzle Display ----------
+# ---------- Puzzle Display ----------
 display_word = ""
 for i, letter in enumerate(answer_word):
     if i in revealed_indices:
@@ -121,10 +114,24 @@ for i, letter in enumerate(answer_word):
 # ---------- UI ----------
 st.markdown('<div class="card">', unsafe_allow_html=True)
 
-# SVG Banner (ash.svg)
-if svg_banner:
+# ---------- Render ash.svg Properly ----------
+if os.path.exists("ash.svg"):
+    with open("ash.svg", "r", encoding="utf-8") as f:
+        svg_content = f.read()
+
+    # Ensure SVG has width
+    if "<svg" in svg_content:
+        svg_content = svg_content.replace(
+            "<svg",
+            '<svg width="160" style="max-width:160px; height:auto;"'
+        )
+
     st.markdown(
-        f'<img src="data:image/svg+xml;base64,{svg_banner}" class="banner">',
+        f"""
+        <div class="logo-animate" style="text-align:center; margin-bottom:30px;">
+            {svg_content}
+        </div>
+        """,
         unsafe_allow_html=True
     )
 
@@ -153,12 +160,10 @@ if st.session_state.unlocked:
         time.sleep(1.2)
 
     st.success("Congratulations! You unlocked your reward.")
-
     st.markdown(
         "### This is your coupon code for ₹100 flat on all products at **ashvanta.in**"
     )
 
-    coupon_code = "GREENEARTH20"
-    st.code(coupon_code, language=None)
+    st.code("GREENEARTH20", language=None)
 
 st.markdown('</div>', unsafe_allow_html=True)

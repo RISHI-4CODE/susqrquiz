@@ -176,9 +176,6 @@ if st.session_state.unlocked:
     st.code("GREENEARTH20", language=None)
     st.markdown("Flat ₹100 OFF at **ashvanta.in**")
     
-    if st.button("Play Again"):
-        for key in list(st.session_state.keys()):
-            del st.session_state[key]
-        st.rerun()
+    
 
 st.markdown('</div>', unsafe_allow_html=True)

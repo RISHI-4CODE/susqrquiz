@@ -1,70 +1,86 @@
 import streamlit as st
 import random
 import time
+import base64
 
 st.set_page_config(page_title="Eco Reward", layout="centered")
 
+# ---------- Load Background ----------
+def get_base64_image(image_path):
+    with open(image_path, "rb") as img:
+        return base64.b64encode(img.read()).decode()
+
+bg_image = get_base64_image("new.jpg")
+
 # ---------- Premium Styling ----------
-st.markdown("""
+st.markdown(f"""
 <style>
-html, body {
+
+[data-testid="stAppViewContainer"] {{
+    background: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.75)),
+                url("data:image/jpg;base64,{bg_image}");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}}
+
+html, body {{
     font-family: 'Inter', sans-serif;
-    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-}
+}}
 
-.card {
+.card {{
     background: rgba(255,255,255,0.08);
-    backdrop-filter: blur(20px);
-    padding: 40px;
-    border-radius: 20px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-    animation: fadeIn 1s ease-in-out;
-}
+    backdrop-filter: blur(25px);
+    padding: 50px;
+    border-radius: 22px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+    animation: fadeIn 1.2s ease-in-out;
+}}
 
-.title {
+.title {{
     text-align:center;
-    font-size:32px;
+    font-size:34px;
     font-weight:600;
     color:white;
-}
+}}
 
-.subtitle {
+.subtitle {{
     text-align:center;
-    color:#cfd8dc;
+    color:#d0d0d0;
     margin-bottom:30px;
-}
+}}
 
-.riddle {
+.riddle {{
     color:white;
     font-size:18px;
-    margin-bottom:15px;
-}
+    margin-bottom:20px;
+}}
 
-.pattern {
+.pattern {{
+    text-align:center;
+    font-size:32px;
+    letter-spacing:12px;
+    margin-bottom:30px;
+}}
+
+.reward {{
     text-align:center;
     font-size:28px;
-    letter-spacing:8px;
-    color:#90caf9;
-    margin-bottom:20px;
-}
-
-.reward {
-    text-align:center;
-    font-size:26px;
     font-weight:600;
-    color:#00e676;
+    color:#00ff9d;
     animation: reveal 1.5s ease forwards;
-}
+}}
 
-@keyframes fadeIn {
-    from {opacity:0; transform:translateY(30px);}
-    to {opacity:1; transform:translateY(0);}
-}
+@keyframes fadeIn {{
+    from {{opacity:0; transform:translateY(40px);}}
+    to {{opacity:1; transform:translateY(0);}}
+}}
 
-@keyframes reveal {
-    from {opacity:0; letter-spacing:6px;}
-    to {opacity:1; letter-spacing:2px;}
-}
+@keyframes reveal {{
+    from {{opacity:0; letter-spacing:8px;}}
+    to {{opacity:1; letter-spacing:2px;}}
+}}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -76,9 +92,13 @@ riddles = [
     {"question": "I fall from the sky and can be stored for sustainability. What am I?", "answer": "rainwater"},
 ]
 
-# ---------- Session ----------
+# ---------- Session Setup ----------
 if "riddle" not in st.session_state:
     st.session_state.riddle = random.choice(riddles)
+
+if "revealed" not in st.session_state:
+    word_len = len(st.session_state.riddle["answer"])
+    st.session_state.revealed = random.sample(range(word_len), min(3, word_len))
 
 if "attempts" not in st.session_state:
     st.session_state.attempts = 0
@@ -86,19 +106,8 @@ if "attempts" not in st.session_state:
 if "unlocked" not in st.session_state:
     st.session_state.unlocked = False
 
-# ---------- Helper: Generate Pattern ----------
-def generate_pattern(word, reveal_count=3):
-    indices = random.sample(range(len(word)), min(reveal_count, len(word)))
-    pattern = ""
-    for i, letter in enumerate(word):
-        if i in indices:
-            pattern += letter.upper()
-        else:
-            pattern += "_"
-        pattern += " "
-    return pattern.strip()
-
-pattern_display = generate_pattern(st.session_state.riddle["answer"], 3)
+answer_word = st.session_state.riddle["answer"]
+revealed_indices = st.session_state.revealed
 
 # ---------- UI ----------
 st.markdown('<div class="card">', unsafe_allow_html=True)
@@ -107,16 +116,33 @@ st.markdown('<div class="title">Unlock Your Eco Reward</div>', unsafe_allow_html
 st.markdown('<div class="subtitle">Solve the riddle using the letter clues below.</div>', unsafe_allow_html=True)
 
 st.markdown(f'<div class="riddle">{st.session_state.riddle["question"]}</div>', unsafe_allow_html=True)
-st.markdown(f'<div class="pattern">{pattern_display}</div>', unsafe_allow_html=True)
 
-answer = st.text_input("Your Answer")
+# Hidden Input
+user_input = st.text_input("Answer", label_visibility="collapsed")
 
+# Build Pattern Display
+display = ""
+typed_index = 0
+
+for i, letter in enumerate(answer_word):
+    if i in revealed_indices:
+        display += f"<span style='color:#90caf9'>{letter.upper()}</span> "
+    else:
+        if typed_index < len(user_input):
+            display += f"<span style='color:white'>{user_input[typed_index].upper()}</span> "
+            typed_index += 1
+        else:
+            display += "<span style='color:white; opacity:0.4;'>_</span> "
+
+st.markdown(f"<div class='pattern'>{display}</div>", unsafe_allow_html=True)
+
+# ---------- Submit Logic ----------
 if st.button("Submit"):
 
     if st.session_state.attempts >= 3:
         st.error("Maximum attempts reached.")
     else:
-        if answer.lower().strip() == st.session_state.riddle["answer"]:
+        if user_input.lower().strip() == answer_word:
             st.session_state.unlocked = True
         else:
             st.session_state.attempts += 1

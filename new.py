@@ -13,8 +13,11 @@ def get_base64_image(path):
             return base64.b64encode(img.read()).decode()
     return None
 
-# Background image (optional)
-bg_image = get_base64_image("new.jpg")  # Use a proper background file here
+# Background image
+bg_image = get_base64_image("new.jpg")
+
+# SVG banner
+svg_banner = get_base64_image("ash.svg")
 
 # ---------- Styling ----------
 background_css = ""
@@ -40,6 +43,14 @@ st.markdown(f"""
     padding: 50px;
     border-radius: 22px;
     box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+}}
+
+.banner {{
+    display:block;
+    margin-left:auto;
+    margin-right:auto;
+    margin-bottom:30px;
+    width:160px;
 }}
 
 .title {{
@@ -110,11 +121,12 @@ for i, letter in enumerate(answer_word):
 # ---------- UI ----------
 st.markdown('<div class="card">', unsafe_allow_html=True)
 
-# Centered Logo (replaces unwanted box)
-if os.path.exists("logo.jpg"):
-    col1, col2, col3 = st.columns([1,2,1])
-    with col2:
-        st.image("logo.jpg", width=150)
+# SVG Banner (ash.svg)
+if svg_banner:
+    st.markdown(
+        f'<img src="data:image/svg+xml;base64,{svg_banner}" class="banner">',
+        unsafe_allow_html=True
+    )
 
 st.markdown('<div class="title">Unlock Your Eco Reward</div>', unsafe_allow_html=True)
 st.markdown(f'<div class="riddle">{st.session_state.riddle["question"]}</div>', unsafe_allow_html=True)
@@ -140,15 +152,13 @@ if st.session_state.unlocked:
     with st.spinner("Verifying response..."):
         time.sleep(1.2)
 
-    st.success(" Congratulations! You unlocked your reward.")
+    st.success("Congratulations! You unlocked your reward.")
 
     st.markdown(
         "### This is your coupon code for ₹100 flat on all products at **ashvanta.in**"
     )
 
     coupon_code = "GREENEARTH20"
-
-    # Copyable coupon box
     st.code(coupon_code, language=None)
 
 st.markdown('</div>', unsafe_allow_html=True)

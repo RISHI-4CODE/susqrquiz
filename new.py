@@ -6,22 +6,21 @@ import base64
 
 st.set_page_config(page_title="Eco Reward", layout="centered")
 
-# ---------- Safe Base64 Loader ----------
+# ---------- Base64 Loader ----------
 def load_base64(path):
     if os.path.exists(path):
         with open(path, "rb") as f:
             return base64.b64encode(f.read()).decode()
     return None
 
-# Load images
 bg_base64 = load_base64("new.jpg")
 
-# ---------- Inject Background ----------
+# ---------- Background ----------
 if bg_base64:
     st.markdown(f"""
     <style>
     [data-testid="stAppViewContainer"] {{
-        background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.85)),
+        background: linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.85)),
                     url("data:image/jpg;base64,{bg_base64}");
         background-size: cover;
         background-position: center;
@@ -30,22 +29,32 @@ if bg_base64:
     </style>
     """, unsafe_allow_html=True)
 
-# ---------- Card Styling ----------
+# ---------- Premium Styling ----------
 st.markdown("""
 <style>
 .card {
     background: rgba(255,255,255,0.08);
     backdrop-filter: blur(25px);
-    padding: 50px;
-    border-radius: 22px;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+    padding: 60px;
+    border-radius: 24px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.7);
     animation: fadeIn 1s ease-in-out;
+}
+
+.brand {
+    text-align:center;
+    font-size:34px;
+    font-weight:600;
+    letter-spacing:6px;
+    color:white;
+    margin-bottom:40px;
+    animation: brandFade 1.4s ease-in-out;
 }
 
 .title {
     text-align:center;
-    font-size:30px;
-    font-weight:600;
+    font-size:28px;
+    font-weight:500;
     color:white;
     margin-bottom:20px;
 }
@@ -53,28 +62,33 @@ st.markdown("""
 .riddle {
     color:white;
     font-size:18px;
-    margin-bottom:20px;
+    margin-bottom:25px;
 }
 
 .puzzle {
     text-align:center;
-    font-size:32px;
-    letter-spacing:12px;
+    font-size:34px;
+    letter-spacing:14px;
     color:white;
-    margin-bottom:25px;
+    margin-bottom:30px;
 }
 
 .reward {
     text-align:center;
-    font-size:28px;
+    font-size:30px;
     font-weight:600;
     color:#00ff9d;
-    margin-top:20px;
+    margin-top:25px;
 }
 
 @keyframes fadeIn {
     from {opacity:0; transform:translateY(30px);}
     to {opacity:1; transform:translateY(0);}
+}
+
+@keyframes brandFade {
+    from {opacity:0; letter-spacing:12px;}
+    to {opacity:1; letter-spacing:6px;}
 }
 </style>
 """, unsafe_allow_html=True)
@@ -87,7 +101,7 @@ riddles = [
     {"question": "I fall from the sky and can be stored for sustainability. What am I?", "answer": "rainwater"},
 ]
 
-# ---------- Session State ----------
+# ---------- Session ----------
 if "riddle" not in st.session_state:
     st.session_state.riddle = random.choice(riddles)
 
@@ -104,7 +118,7 @@ if "unlocked" not in st.session_state:
 answer_word = st.session_state.riddle["answer"]
 revealed_indices = st.session_state.revealed
 
-# ---------- Puzzle Display ----------
+# ---------- Puzzle ----------
 display_word = ""
 for i, letter in enumerate(answer_word):
     if i in revealed_indices:
@@ -115,26 +129,7 @@ for i, letter in enumerate(answer_word):
 # ---------- UI ----------
 st.markdown('<div class="card">', unsafe_allow_html=True)
 
-# ---------- SVG Logo ----------
-if os.path.exists("ash.svg"):
-    with open("ash.svg", "r", encoding="utf-8") as f:
-        svg_content = f.read()
-
-    st.markdown(f"""
-    <style>
-    .svg-wrapper svg * {{
-        fill: white !important;
-        stroke: white !important;
-    }}
-    </style>
-
-    <div class="svg-wrapper" style="text-align:center; margin-bottom:30px;">
-        {svg_content}
-    </div>
-    """, unsafe_allow_html=True)
-
-
-
+st.markdown('<div class="brand">ASHVANTA</div>', unsafe_allow_html=True)
 st.markdown('<div class="title">Unlock Your Eco Reward</div>', unsafe_allow_html=True)
 st.markdown(f'<div class="riddle">{st.session_state.riddle["question"]}</div>', unsafe_allow_html=True)
 st.markdown(f'<div class="puzzle">{display_word}</div>', unsafe_allow_html=True)

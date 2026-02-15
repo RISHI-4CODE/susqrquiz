@@ -10,50 +10,51 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# ---------- Hide Streamlit Header / Toolbar ----------
+# ---------------- REMOVE ALL STREAMLIT DEFAULT SPACING ----------------
 st.markdown("""
 <style>
+
+/* Hide header, footer, toolbar */
 header {visibility: hidden;}
 footer {visibility: hidden;}
 [data-testid="stToolbar"] {display: none;}
 [data-testid="stHeader"] {display: none;}
-[data-testid="stAppViewContainer"] > .main {padding-top: 0rem;}
-</style>
-""", unsafe_allow_html=True)
 
-# ---------- Base64 Loader ----------
-def load_base64(path):
-    if os.path.exists(path):
-        with open(path, "rb") as f:
-            return base64.b64encode(f.read()).decode()
-    return None
+/* Remove ALL padding/margin */
+.block-container {
+    padding: 0rem !important;
+}
 
-bg_base64 = load_base64("new.jpg")
+.main > div {
+    padding: 0rem !important;
+    margin: 0rem !important;
+}
 
-# ---------- Background ----------
-if bg_base64:
-    st.markdown(f"""
-    <style>
-    [data-testid="stAppViewContainer"] {{
-        background: linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.85)),
-                    url("data:image/jpg;base64,{bg_base64}");
-        background-size: cover;
-        background-position: center;
-        background-attachment: fixed;
-    }}
-    </style>
-    """, unsafe_allow_html=True)
+section.main > div {
+    padding: 0rem !important;
+}
 
-# ---------- Card Styling ----------
-st.markdown("""
-<style>
+div[data-testid="stVerticalBlock"] > div:empty {
+    display: none !important;
+}
+
+/* Fullscreen center layout */
+.center-wrapper {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Glass Card */
 .card {
+    width: 600px;
+    max-width: 92%;
     background: rgba(255,255,255,0.08);
     backdrop-filter: blur(25px);
     padding: 60px;
     border-radius: 24px;
     box-shadow: 0 20px 60px rgba(0,0,0,0.7);
-    margin-top: 60px;
 }
 
 .title {
@@ -68,6 +69,7 @@ st.markdown("""
     color:white;
     font-size:18px;
     margin-bottom:25px;
+    text-align:center;
 }
 
 .puzzle {
@@ -85,10 +87,35 @@ st.markdown("""
     color:#00ff9d;
     margin-top:25px;
 }
+
 </style>
 """, unsafe_allow_html=True)
 
-# ---------- Riddles ----------
+
+# ---------------- BASE64 BACKGROUND ----------------
+def load_base64(path):
+    if os.path.exists(path):
+        with open(path, "rb") as f:
+            return base64.b64encode(f.read()).decode()
+    return None
+
+bg_base64 = load_base64("new.jpg")
+
+if bg_base64:
+    st.markdown(f"""
+    <style>
+    [data-testid="stAppViewContainer"] {{
+        background: linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.85)),
+                    url("data:image/jpg;base64,{bg_base64}");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+    }}
+    </style>
+    """, unsafe_allow_html=True)
+
+
+# ---------------- RIDDLES ----------------
 riddles = [
     {"question": "I turn waste into something new. I am one of the three R's. What am I?", "answer": "recycle"},
     {"question": "Two wheels, no fuel, I move without smoke. What am I?", "answer": "bicycle"},
@@ -96,7 +123,8 @@ riddles = [
     {"question": "I fall from the sky and can be stored for sustainability. What am I?", "answer": "rainwater"},
 ]
 
-# ---------- Session ----------
+
+# ---------------- SESSION STATE ----------------
 if "riddle" not in st.session_state:
     st.session_state.riddle = random.choice(riddles)
 
@@ -110,10 +138,12 @@ if "attempts" not in st.session_state:
 if "unlocked" not in st.session_state:
     st.session_state.unlocked = False
 
+
 answer_word = st.session_state.riddle["answer"]
 revealed_indices = st.session_state.revealed
 
-# ---------- Puzzle ----------
+
+# ---------------- PUZZLE DISPLAY ----------------
 display_word = ""
 for i, letter in enumerate(answer_word):
     if i in revealed_indices:
@@ -121,16 +151,19 @@ for i, letter in enumerate(answer_word):
     else:
         display_word += "_ "
 
-# ---------- UI ----------
+
+# ---------------- UI ----------------
+st.markdown('<div class="center-wrapper">', unsafe_allow_html=True)
 st.markdown('<div class="card">', unsafe_allow_html=True)
 
 st.markdown('<div class="title">Unlock Your Eco Reward</div>', unsafe_allow_html=True)
 st.markdown(f'<div class="riddle">{st.session_state.riddle["question"]}</div>', unsafe_allow_html=True)
 st.markdown(f'<div class="puzzle">{display_word}</div>', unsafe_allow_html=True)
 
-# ---------- Input ----------
+
+# ---------------- INPUT ----------------
 if not st.session_state.unlocked and st.session_state.attempts < 3:
-    user_input = st.text_input("Enter your answer:", label_visibility="collapsed").strip().lower()
+    user_input = st.text_input("", placeholder="Enter your answer").strip().lower()
 
     if st.button("Submit"):
         if user_input == answer_word:
@@ -142,15 +175,16 @@ if not st.session_state.unlocked and st.session_state.attempts < 3:
 if st.session_state.attempts >= 3 and not st.session_state.unlocked:
     st.error("Maximum attempts reached.")
 
-# ---------- Reward ----------
+
+# ---------------- REWARD ----------------
 if st.session_state.unlocked:
     with st.spinner("Verifying response..."):
         time.sleep(1.2)
 
     st.success("Congratulations! You unlocked your reward.")
-    st.markdown(
-        "### This is your coupon code for ₹100 flat on all products at **ashvanta.in**"
-    )
+    st.markdown("### This is your coupon code for ₹100 flat on all products at **ashvanta.in**")
     st.code("GREENEARTH20", language=None)
 
+
+st.markdown('</div>', unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)

@@ -37,19 +37,14 @@ st.markdown(f"""
     font-size:30px;
     font-weight:600;
     color:white;
-    margin-bottom:10px;
-}}
-
-.subtitle {{
-    text-align:center;
-    color:#cccccc;
-    margin-bottom:25px;
-}}
-
-.riddle {{
-    color:white;
-    font-size:18px;
     margin-bottom:20px;
+}}
+
+.reward {{
+    text-align:center;
+    font-size:28px;
+    font-weight:600;
+    color:#00ff9d;
 }}
 
 .puzzle {{
@@ -59,21 +54,15 @@ st.markdown(f"""
     color:white;
     margin-bottom:25px;
 }}
-
-.reward {{
-    text-align:center;
-    font-size:28px;
-    font-weight:600;
-    color:#00ff9d;
-}}
 </style>
 """, unsafe_allow_html=True)
 
-# ---------- Lock Check (Browser localStorage) ----------
-lock_status = components.html("""
+# ---------- DEVICE LOCK CHECK ----------
+lock_check = components.html("""
 <script>
-let locked = localStorage.getItem("eco_quiz_locked");
-if (locked === "true") {
+const status = localStorage.getItem("eco_quiz_locked");
+
+if (status === "true") {
     Streamlit.setComponentValue("LOCKED");
 } else {
     Streamlit.setComponentValue("OPEN");
@@ -81,11 +70,14 @@ if (locked === "true") {
 </script>
 """, height=0)
 
-# If already locked → stop app
-if lock_status == "LOCKED":
+# Wait until component returns something
+if lock_check is None:
+    st.stop()
+
+if lock_check == "LOCKED":
     st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.markdown('<div class="title">Quiz Locked</div>', unsafe_allow_html=True)
-    st.error("You have already participated from this device.")
+    st.markdown('<div class="title">Already Used</div>', unsafe_allow_html=True)
+    st.error("This device has already participated.")
     st.markdown('</div>', unsafe_allow_html=True)
     st.stop()
 
@@ -113,7 +105,7 @@ if "unlocked" not in st.session_state:
 answer_word = st.session_state.riddle["answer"]
 revealed_indices = st.session_state.revealed
 
-# ---------- Generate Puzzle ----------
+# ---------- Display Puzzle ----------
 display_word = ""
 for i, letter in enumerate(answer_word):
     if i in revealed_indices:
@@ -121,12 +113,10 @@ for i, letter in enumerate(answer_word):
     else:
         display_word += "_ "
 
-# ---------- Card ----------
+# ---------- UI ----------
 st.markdown('<div class="card">', unsafe_allow_html=True)
-
 st.markdown('<div class="title">Unlock Your Eco Reward</div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle">Solve the riddle below.</div>', unsafe_allow_html=True)
-st.markdown(f'<div class="riddle">{st.session_state.riddle["question"]}</div>', unsafe_allow_html=True)
+st.write(st.session_state.riddle["question"])
 st.markdown(f'<div class="puzzle">{display_word}</div>', unsafe_allow_html=True)
 
 # ---------- Input ----------
@@ -144,14 +134,13 @@ if not st.session_state.unlocked and st.session_state.attempts < 3:
 if st.session_state.attempts >= 3 and not st.session_state.unlocked:
     st.error("Maximum attempts reached.")
 
-# ---------- Reward + Lock Device ----------
+# ---------- Reward + Lock ----------
 if st.session_state.unlocked:
     with st.spinner("Verifying response..."):
-        time.sleep(1.5)
+        time.sleep(1.2)
 
     st.markdown('<div class="reward">GREENEARTH20</div>', unsafe_allow_html=True)
 
-    # Lock device permanently
     components.html("""
     <script>
     localStorage.setItem("eco_quiz_locked", "true");

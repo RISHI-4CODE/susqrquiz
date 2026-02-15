@@ -174,7 +174,7 @@ if st.session_state.unlocked:
     st.success("Correct! You've earned a reward.")
     st.markdown("### Your Coupon Code:")
     st.code("9RKHJNA54TSC", language=None)
-    st.markdown("Flat ₹100 OFF at **ashvanta.in**")
+    st.markdown("Flat ₹100 OFF at **ashvanta.shop**")
     
     
 

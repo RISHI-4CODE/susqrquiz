@@ -2,25 +2,36 @@ import streamlit as st
 import random
 import time
 import base64
+import os
 
 st.set_page_config(page_title="Eco Reward", layout="centered")
 
-# ---------- Image Loader ----------
+# ---------- Safe Image Loader ----------
 def get_base64_image(path):
-    with open(path, "rb") as img:
-        return base64.b64encode(img.read()).decode()
+    if os.path.exists(path):
+        with open(path, "rb") as img:
+            return base64.b64encode(img.read()).decode()
+    return None
 
-bg_image = get_base64_image("new.jpg")
+# Background image (optional)
+bg_image = get_base64_image("background.jpg")  # Use a proper background file here
 
 # ---------- Styling ----------
-st.markdown(f"""
-<style>
-[data-testid="stAppViewContainer"] {{
+background_css = ""
+
+if bg_image:
+    background_css = f"""
     background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.85)),
                 url("data:image/jpg;base64,{bg_image}");
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
+    """
+
+st.markdown(f"""
+<style>
+[data-testid="stAppViewContainer"] {{
+    {background_css}
 }}
 
 .card {{
@@ -58,6 +69,7 @@ st.markdown(f"""
     font-size:28px;
     font-weight:600;
     color:#00ff9d;
+    margin-top:20px;
 }}
 </style>
 """, unsafe_allow_html=True)
@@ -97,6 +109,13 @@ for i, letter in enumerate(answer_word):
 
 # ---------- UI ----------
 st.markdown('<div class="card">', unsafe_allow_html=True)
+
+# Centered Logo (replaces unwanted box)
+if os.path.exists("logo.jpg"):
+    col1, col2, col3 = st.columns([1,2,1])
+    with col2:
+        st.image("logo.jpg", width=150)
+
 st.markdown('<div class="title">Unlock Your Eco Reward</div>', unsafe_allow_html=True)
 st.markdown(f'<div class="riddle">{st.session_state.riddle["question"]}</div>', unsafe_allow_html=True)
 st.markdown(f'<div class="puzzle">{display_word}</div>', unsafe_allow_html=True)
@@ -121,13 +140,15 @@ if st.session_state.unlocked:
     with st.spinner("Verifying response..."):
         time.sleep(1.2)
 
-    st.success(" Congratulations! You unlocked your reward.")
+    st.success("🎉 Congratulations! You unlocked your reward.")
 
     st.markdown(
         "### This is your coupon code for ₹100 flat on all products at **ashvanta.in**"
     )
 
-    coupon_code = "9RKHJNA54TSC"
+    coupon_code = "GREENEARTH20"
 
     # Copyable coupon box
     st.code(coupon_code, language=None)
+
+st.markdown('</div>', unsafe_allow_html=True)
